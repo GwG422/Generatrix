@@ -135,6 +135,7 @@
 				<div class='widget'>
 					<h3>Latest Commits</h3>
 					<?php
+			  
 						$commits = $this->get('commits');
 						foreach($commits as $commit) {
 							$author = _g($commit, 'author');

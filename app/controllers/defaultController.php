@@ -39,6 +39,8 @@
 			$json = file_get_contents('http://github.com/api/v2/json/commits/list/vercingetorix/Generatrix/master');
 			$commits = json_decode($json, true);
 			$commits = isset($commits['commits']) ? $commits['commits'] : array();
+			
+			$this->set('name_of_the_variable', $variable);
 
 			$data = array();
 			foreach($commits as $commit) {
