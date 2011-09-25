@@ -53,7 +53,8 @@
 							// Check for varchar_64
 							$varchar_split = explode('_', $key_type);
 							if($varchar_split[0] == 'varchar') {
-								$vals[] = substr($value, 0, $varchar_split[1]);
+								$value = substr($value, 0, $varchar_split[1]);
+								$vals[] = mysql_real_escape_string(htmlentities($value), $this->database->getConnection());
 								break;
 							}
 							display_error("The key type '{$key_type}' is not defined in the loop");
