@@ -1,5 +1,5 @@
 <?php
-	include('assoclist.php');
+	include_once('assoclist.php');
 
 	class Session extends AssocList {
 		public function __construct() {
