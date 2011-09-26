@@ -243,4 +243,16 @@
 		}
 	}
 
+	function chopToWord($string, $length, $ellipsis = true) {
+		if(strlen($string) <= $length) {
+			return $string;
+		} else {
+			return substr($string, 0, strrpos(substr($string, 0, $length), ' ')) . ($ellipsis ? '&hellip;' : '');
+		}
+	}
+
+	function br2nl($string) {
+		return str_replace(array('<br>', '<br />', '<br/>'), PHP_EOL, $string);
+	}
+
 ?>

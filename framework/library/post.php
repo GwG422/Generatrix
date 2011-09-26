@@ -1,6 +1,7 @@
 <?php
 
   // This class creates an associative list for $_POST, so that you can use specific functions
+  	include_once('assoclist.php');
 
 	class Post extends AssocList {
 		public function __construct() {

@@ -44,7 +44,7 @@
 					switch($key_type) {
 						case 'text':
 							$value = str_replace('\r\n', '<br>', $value);
-							$vals[] = mysql_real_escape_string(htmlentities($value), $this->database->getConnection());
+							$vals[] = mysql_real_escape_string(htmlentities($value, ENT_QUOTES, 'UTF-8'), $this->database->getConnection());
 							break;
 						case 'int':
 							$vals[] = is_numeric($value) ? $value : 0;
@@ -54,8 +54,12 @@
 							$varchar_split = explode('_', $key_type);
 							if($varchar_split[0] == 'varchar') {
 								$value = substr($value, 0, $varchar_split[1]);
-								$vals[] = mysql_real_escape_string(htmlentities($value), $this->database->getConnection());
+								$vals[] = mysql_real_escape_string(htmlentities($value, ENT_QUOTES, 'UTF-8'), $this->database->getConnection());
 								break;
+							} else if($varchar_split[0] == 'tinyint') {
+								$vals[] = is_numeric($value) ? $value : 0;
+							} else if($varchar_split[0] == 'decimal') {
+								$vals[] = is_numeric($value) ? $value : 0;
 							}
 							display_error("The key type '{$key_type}' is not defined in the loop");
 							break;
@@ -99,7 +103,7 @@
 			$updates = array();
 			foreach($columns as $key => $value) {
 				$value = str_replace('\r\n', '<br>', $value);
-				$updates[] = ' `' . $key . '` = "' . mysql_real_escape_string(stripslashes(htmlentities($value)), $this->database->getConnection()) . '" ';
+				$updates[] = ' `' . $key . '` = "' . mysql_real_escape_string(stripslashes(htmlentities($value, ENT_QUOTES, 'UTF-8')), $this->database->getConnection()) . '" ';
 			}
 			$sql = 'UPDATE ' . $this->name . ' SET ' . implode(', ', $updates) . ' ' . $condition;
 			return $this->database->query($sql);
