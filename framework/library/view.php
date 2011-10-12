@@ -390,6 +390,17 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 
 			return $data;
 		}
+
+		public function getP($number) {
+			$url = $this->getURL();
+			$p1 = isset($url[$number]) ? mysql_real_escape_string($url[$number], $this->getDb()->getConnection()) : false;
+			return $p1;
+		}
+
+		public function getURL() {
+			return $this->getGeneratrix()->getRequestArray();
+		}
+
 	}
 
 ?>
