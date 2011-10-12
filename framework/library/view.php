@@ -393,7 +393,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 
 		public function getP($number) {
 			$url = $this->getURL();
-			$p1 = isset($url[$number]) ? mysql_real_escape_string($url[$number], $this->getGeneratrix()->getController()->getDb()->getConnection()) : false;
+			$p1 = isset($url[$number]) ? $url[$number] : false;
 			return $p1;
 		}
 
