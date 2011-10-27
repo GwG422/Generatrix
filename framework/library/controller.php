@@ -30,47 +30,30 @@
 			return false;
 		}
 
-		public function getP1() {
+		private function getP($i) {
 			$url = $this->getURL();
-			$p1 = isset($url[0]) ? mysql_real_escape_string($url[0], $this->getDb()->getConnection()) : false;
-			return $p1;
+
+			$output = '';
+			if( $this->getDb()->getConnection() !== false ) {
+				$output = isset($url[$i]) ? mysql_real_escape_string($url[$i], $this->getDb()->getConnection()) : false;
+			} else {
+				$output = isset($url[$i]) ? $url[$i] : false;
+			}
+
+			$output = $this->getGeneratrix()->removeRequestType($output);
+
+			return $output;
 		}
 
-		public function getP2() {
-			$url = $this->getURL();
-			$p2 = isset($url[1]) ? mysql_real_escape_string($url[1], $this->getDb()->getConnection()) : false;
-			return $p2;
-		}
-
-		public function getP3() {
-			$url = $this->getURL();
-			$p3 = isset($url[2]) ? mysql_real_escape_string($url[2], $this->getDb()->getConnection()) : false;
-			return $p3;
-		}
-
-		public function getP4() {
-			$url = $this->getURL();
-			$p4 = isset($url[3]) ? mysql_real_escape_string($url[3], $this->getDb()->getConnection()) : false;
-			return $p4;
-		}
-
-		public function getP5() {
-			$url = $this->getURL();
-			$p4 = isset($url[4]) ? mysql_real_escape_string($url[4], $this->getDb()->getConnection()) : false;
-			return $p4;
-		}
-
-		public function getP6() {
-			$url = $this->getURL();
-			$p4 = isset($url[5]) ? mysql_real_escape_string($url[5], $this->getDb()->getConnection()) : false;
-			return $p4;
-		}
-
-		public function getP7() {
-			$url = $this->getURL();
-			$p4 = isset($url[6]) ? mysql_real_escape_string($url[6], $this->getDb()->getConnection()) : false;
-			return $p4;
-		}
+		public function getP1() { return $this->getP(0); }
+		public function getP2() { return $this->getP(1); }
+		public function getP3() { return $this->getP(2); }
+		public function getP4() { return $this->getP(3); }
+		public function getP5() { return $this->getP(4); }
+		public function getP6() { return $this->getP(5); }
+		public function getP7() { return $this->getP(6); }
+		public function getP8() { return $this->getP(7); }
+		public function getP9() { return $this->getP(8); }
 
 		public function getUploadedFile($tag, $where = '/app/cache/uploads/', $allowed = '') {
 			$return = array('error' => false, 'path' => false, 'name' => false);
@@ -198,9 +181,9 @@
 			return checkArray($_SESSION, $tag_name) ? mysql_real_escape_string($_SESSION[$tag_name], $this->getDb()->getConnection()) : false;
 		}
 
-    public function getGetValue($tag_name) {
-			return checkArray($_GET, $tag_name) ? mysql_real_escape_string($_GET[$tag_name], $this->getDb()->getConnection()) : false;
-    }
+	    public function getGetValue($tag_name) {
+				return checkArray($_GET, $tag_name) ? mysql_real_escape_string($_GET[$tag_name], $this->getDb()->getConnection()) : false;
+	    }
 
 		public function getURL() {
 			return $this->getGeneratrix()->getRequestArray();

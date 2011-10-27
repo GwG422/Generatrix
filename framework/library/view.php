@@ -45,6 +45,10 @@
 			}
 		}
 
+		public function getAllVariables() {
+			return $this->variables;
+		}
+
 		public function getSafe($var_name) {
 			if($this->hasVariable($var_name)) {
 				return $this->variables[$var_name];
@@ -391,11 +395,30 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 			return $data;
 		}
 
-		public function getP($number) {
+		private function getP($i) {
 			$url = $this->getURL();
-			$p1 = isset($url[$number]) ? $url[$number] : false;
-			return $p1;
+
+			$output = '';
+			//if( $this->getDb()->getConnection() !== false ) {
+			//	$output = isset($url[$i]) ? mysql_real_escape_string($url[$i], $this->getDb()->getConnection()) : false;
+			//} else {
+				$output = isset($url[$i]) ? $url[$i] : false;
+			//}
+
+			$output = $this->getGeneratrix()->removeRequestType($output);
+
+			return $output;
 		}
+
+		public function getP1() { return $this->getP(0); }
+		public function getP2() { return $this->getP(1); }
+		public function getP3() { return $this->getP(2); }
+		public function getP4() { return $this->getP(3); }
+		public function getP5() { return $this->getP(4); }
+		public function getP6() { return $this->getP(5); }
+		public function getP7() { return $this->getP(6); }
+		public function getP8() { return $this->getP(7); }
+		public function getP9() { return $this->getP(8); }
 
 		public function getURL() {
 			return $this->getGeneratrix()->getRequestArray();

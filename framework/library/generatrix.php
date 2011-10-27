@@ -18,6 +18,7 @@
 
 		private $controller;
 		private $method;
+		private $request_type;
 
 		private $mail;
 		private $file;
@@ -120,10 +121,10 @@
 
 		private function handleRequest() {
 			// We have got the url value from .htaccess, use it to find which page is to be displayed
-			$details = $this->getControllerAndMethod();
-			$controller_class = $details['controller'] . 'Controller';
-			$view_class = $details['controller'] . 'View';
-			$controller_method = $details['method'];
+			$this->getControllerAndMethod();
+			$controller_class = $this->controller . 'Controller';
+			$view_class = $this->controller . 'View';
+			$controller_method = $this->method;
 
 			// Check if the page is available in the cache
 			$found_cached_page = $this->checkCache();
@@ -155,70 +156,117 @@
 							// Create the header etc
 							$view->startPage($controller->isControllerHtml());
 							// Get the final page to be displayed
-							if(version_compare(PHP_VERSION, '5.2.0') >= 0) {
-								$view->$controller_method();
-								if($controller->isControllerHtml()) {
-									$final_page .= $view->endPage();
-								}
-							} else {
-								$view->$controller_method();
-								$html_object = $view->endPage();
-								if ( is_object($html_object) && $controller->isControllerHtml()  ) {
-									$final_page .= $html_object->_toString();
-								}
-							}
 
-							if(!$this->cli->isEnabled())
-								echo $final_page;
+							if( in_array($this->request_type, array('json') ) ) {
+
+								$view_variables = $view->getAllVariables();
+								if($view_variables == '') {
+									$view_variables = array();
+								}
+
+								showJSON($view_variables);
+								
+							} else {
+
+								if(version_compare(PHP_VERSION, '5.2.0') >= 0) {
+									$view->$controller_method();
+									if($controller->isControllerHtml()) {
+										$final_page .= $view->endPage();
+									}
+								} else {
+									$view->$controller_method();
+									$html_object = $view->endPage();
+									if ( is_object($html_object) && $controller->isControllerHtml()  ) {
+										$final_page .= $html_object->_toString();
+									}
+								}
+
+								if(!$this->cli->isEnabled()) {
+									echo $final_page;
+								}
+
+							}
 						} else {
-							display_404('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $view_class .'"</strong> does not exist');
+							if( $this->request_type == 'json' ) {
+								display_404_json('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $view_class .'"</strong> does not exist');
+							} else {
+								display_404('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $view_class .'"</strong> does not exist');
+							}
 						}
 					} else {
-						display_404('The class <strong>"'. $view_class . '"</strong> does not exist');
+						if( $this->request_type == 'json' ) {
+							display_404_json('The class <strong>"'. $view_class . '"</strong> does not exist');
+						} else {
+							display_404('The class <strong>"'. $view_class . '"</strong> does not exist');
+						}
 					}
 				} else {
-					display_404('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');
+					if( $this->request_type == 'json' ) {
+						display_404_json('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');	
+					} else {
+						display_404('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');
+					}
 				}
 			} else {
-				//if(!$this->handleCatchAllRequest())
+				if( $this->request_type == 'json' ) {
+					display_404_json('The class <strong>"' . $controller_class .'"</strong> does not exist');
+				} else {
 					display_404('The class <strong>"' . $controller_class .'"</strong> does not exist');
+				}
 			}
 		}
 
 		private function getControllerAndMethod() {
 			// Parse the values obtained from the url (obtained from .htaccess) to get the controller and view
-			$details = array();
-
 			if(USE_CATCH_ALL) {
 				require_once(path('/app/settings/mapping.php'));
 
 				$request = array();
-				if($this->cli->isEnabled())
+				if($this->cli->isEnabled()) {
 					$request = $this->getCliArray();
-				else
+				} else {
 					$request = $this->getRequestArray();
-
-				$details = mapping($request);
-
-				if(!checkArray($details, 'controller')) {
-					$details['controller'] = (isset($request[0]) && ($request[0] != '')) ? $request[0] : DEFAULT_CONTROLLER;
 				}
 
-				if(!checkArray($details, 'method')) {
-					$details['method'] = (isset($request[1]) && ($request[1] != '')) ? $request[1] : 'base';
+				$last_element = '';
+				for($i = 9; $i >= 0; $i--) {
+					if( ($last_element == '') && isset($request[$i]) && ($request[$i] != '') ) {
+						$last_element = $request[$i];
+					}
+				}
+				
+				$dots = explode('.', $last_element);
+
+				$type = '';
+				if( count($dots) > 1)
+					$type = $dots[count($dots) - 1];
+
+				$details = mapping($request);
+				if( _g($details, 'controller') ) $this->controller = _g($details, 'controller');
+				if( _g($details, 'method') ) $this->method = _g($details, 'method');
+
+				$this->request_type = $type;
+
+				if( $this->controller == '' ) {
+					$this->controller = (isset($request[0]) && ($request[0] != '')) ? $request[0] : DEFAULT_CONTROLLER;
+				}
+
+				if( $this->method == '' ) {
+					$this->method = (isset($request[1]) && ($request[1] != '')) ? $request[1] : 'base';
 				}
 
 				// Do not destroy the generatrix controller
 				$c_id = ($this->cli->isEnabled()) ? 1 : 0;
 				if(isset($request[$c_id]) && ($request[$c_id] == 'generatrix')) {
-					$details['controller'] = $request[$c_id];
+					$this->controller = $request[$c_id];
 					$c_id++;
 					if(isset($request[$c_id]) && ($request[$c_id] != '')) {
-						$details['method'] = $request[$c_id];
+						$this->method = $request[$c_id];
 					} else {
-						$details['method'] = 'base';
+						$this->method = 'base';
 					}
 				}
+
 			} else {
 				// If no controller or method is defined, we need to use the DEFAULT_CONTROLLER (defined in app/settings/config.php)
 				// If cli is enabled, we use the format site.com/index.php controller function
@@ -228,35 +276,52 @@
 						header('HTTP/1.1 301 Moved Permanently');
 						location('/' . DEFAULT_CONTROLLER);
 					}
-					$details['controller'] = $this->cli->getValue('controller') == "" ? DEFAULT_CONTROLLER : $this->cli->getValue('controller');
-					$details['method'] = $this->cli->getValue('method') == "" ? 'base' : $this->cli->getValue('method');
+					$this->controller = $this->cli->getValue('controller') == "" ? DEFAULT_CONTROLLER : $this->cli->getValue('controller');
+					$this->method = $this->cli->getValue('method') == "" ? 'base' : $this->cli->getValue('method');
+
+					$type = '';
+					$ARGV = _g($_SERVER, 'argv');
+					if(isset($ARGV[0])) {
+						$last_element = $ARGV[ count($ARGV) - 1];
+						$dots = explode('.', $last_element);
+
+						if( count($dots) > 1 )
+							$type = $dots[count($dots) - 1];
+						$type = $type;
+					}
+					$this->request_type = $type;
 				} else {
 					// If this request is coming from the browser, we need to get the value from url (obtained from .htaccess)
 					if($this->request->getValue('controller') == "") {
 						header('HTTP/1.1 301 Moved Permanently');
 						location('/' . DEFAULT_CONTROLLER);
 					}
-					$details['controller'] = $this->request->getValue('controller') == "" ? DEFAULT_CONTROLLER : $this->request->getValue('controller');
-					$details['method'] = $this->request->getValue('method') == "" ? 'base' : $this->request->getValue('method');
+					$this->controller = $this->request->getValue('controller') == "" ? DEFAULT_CONTROLLER : $this->request->getValue('controller');
+					$this->method = $this->request->getValue('method') == "" ? 'base' : $this->request->getValue('method');
+
+					$URL = _g($_SERVER, 'REQUEST_URI');
+					$slashes = explode('/', $URL);
+					// Take the last slash and explode on .
+					$dots = explode('.', $slashes[count($slashes) - 1]);
+
+					$type = '';
+					if( count($dots) > 1 )
+						$type = $dots[count($dots) - 1];
+					$this->request_type = $type;
 				}
 
-				// TODO : Add customHandlers
-				// We need to set the $controller and $method for the generatrix class
-				$this->controller = (function_exists('customHandlers')) ? customHandlers($details, 'controller') : $details['controller'];
-				$this->method = (function_exists('customHandlers')) ? customHandlers($details, 'method') : $details['method'];
 
-				// set the controller and method again (depending on the customHandlers)
-				$details['controller'] = $this->controller;
-				$details['method'] = $this->method;
 			}
 
 			// check for cache.manifest
-			if($details['controller'] == 'cache.manifest') {
+			/* if($details['controller'] == 'cache.manifest') {
 				$details['controller'] = 'cacheManifest';
 				$details['method'] = 'base';
-			}
+			} */
 
-			return $details;
+			$this->controller = $this->removeRequestType($this->controller);
+			$this->method = $this->removeRequestType($this->method);
+			//return $details;
 		}
 
 		private function requireFiles() {
@@ -299,6 +364,13 @@
 		// Get memory footprint
 		public function getMemoryFootprint($message) {
 			display($message . '  Usage: ' . memory_get_usage(true) . ' Peak: ' . memory_get_peak_usage(true));
+		}
+
+		public function removeRequestType($string) {
+			if( strpos($string, '.' . $this->request_type) !== false ) {
+				$string = str_replace('.' . $this->request_type, '', $string);
+			}
+			return $string;
 		}
 	}
 

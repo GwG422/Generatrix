@@ -80,11 +80,15 @@
 			// TODO : Connect to multiple databases
 			if(!$this->connection) {
 				// Connect to the database
-				if(!$this->connection = mysql_connect(DATABASE_HOST, DATABASE_USER, DATABASE_PASS))
+				if(!$this->connection = mysql_connect(DATABASE_HOST, DATABASE_USER, DATABASE_PASS)) {
 					$this->setError();
+					$this->connection = false;
+				}
 				// Select the database
-				if(!mysql_select_db(DATABASE_NAME))
+				if(!mysql_select_db(DATABASE_NAME)) {
 					$this->setError();
+					$this->connection = false;
+				}
 			}
 		}
 

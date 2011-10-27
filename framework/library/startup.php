@@ -33,10 +33,40 @@
 			echo "</div>";
 		}
 	}
+	function display_404_json ($message, $file = '', $line = '') { 
+		if(isset($_SERVER['argc']) && ($_SERVER['argc'] > 1)) {
+			showJSON("This page does not exist", 'File not found');
+		} else {
+			header("HTTP/1.1 404 Not Found");
+			showJSON("This page does not exist", 'File not found');
+		}
+	}
 
 	function add_file_and_line($file, $line) {
 		$return = (($file != '') || ($line != '')) ? '<br />In file <strong>'. str_replace(DISK_ROOT, '', $file) . '</strong> on line <strong>' . $line . '</strong>' : '';
 		return $return;
+	}
+
+	// Show JSON
+	function showJSON($data, $error = '') {
+		$url = _g($_SERVER, 'REQUEST_URI');
+
+		$has_error = false;
+		if($error != '') {
+			$has_error = true;
+		}
+
+		$variables = array(
+			'url' => $url,
+			'error' => $has_error,
+			'error_description' => $error,
+			'data' => $data,
+			'timestamp' => time() 
+			);
+
+		header('Content-Type: application/json');
+		echo json_encode( $variables );
+		die();
 	}
 
 	// This displays an error in php, shows up in red
