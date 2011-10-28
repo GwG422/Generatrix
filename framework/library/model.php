@@ -100,7 +100,7 @@
 			return $result;
 		}
 
-		public function select($columns, $condition = '', $cached = 1, $time = 30) {
+		public function select($columns, $condition = '', $cached = 0, $time = 30) {
 			$sql = '';
 			if(!$this->is_join) {
 				$sql = 'SELECT ' . $columns . ' FROM ' . $this->name . ' ' . $condition;
@@ -123,18 +123,24 @@
 			$cached_output = ($cached != 0) ? $this->cache->get(md5($sql), $time) : false;
 			$timer2 = microtime(true);
 			if(DEBUG_QUERIES) {
-				timeDiffLog('[CACHE-GET] ' . $sql, $timer1, $timer2);
+				if($cached != 0) {
+					timeDiffLog('[CACHE-GET] ' . $sql, $timer1, $timer2);
+				}
 			}
 
 			if($cached_output === false) {
 				$output = $this->database->query($sql);
 				$timer3 = microtime(true);
-				$this->cache->set(md5($sql), $output);
-				$timer4 = microtime(true);
+				if($cached != 0) {
+					$this->cache->set(md5($sql), $output);
+					$timer4 = microtime(true);
+				}
 
 				if(DEBUG_QUERIES) {
 					timeDiffLog('[DB-QUERY] ' . $sql, $timer2, $timer3);
-					timeDiffLog('[CACHE-SET] ' . $sql, $timer3, $timer4);
+					if($cached != 0) {
+						timeDiffLog('[CACHE-SET] ' . $sql, $timer3, $timer4);
+					}
 				}
 			} else {
 				$output = $cached_output;
