@@ -71,15 +71,36 @@
 			}
 
 			$sql = 'INSERT INTO ' . $this->name . ' (`' . implode('`, `', $keys) . '`) VALUES("' . implode('", "', $vals) . '");';
-			return $this->database->query($sql);
+
+			$timer1 = microtime(true);
+
+			// The actual query
+			$result = $this->database->query($sql);
+
+			$timer2 = microtime(true);
+			if(DEBUG_QUERIES) {
+				timeDiffLog($sql, $timer1, $timer2);
+			}
+			return $result;
 		}
 
 		public function delete($condition) {
 			$sql = 'DELETE FROM ' . $this->name . ' ' . $condition . ';';
-			return $this->database->query($sql);
+
+			$timer1 = microtime(true);
+
+			// The actual query
+			$result = $this->database->query($sql);
+
+			$timer2 = microtime(true);
+			if(DEBUG_QUERIES) {
+				timeDiffLog($sql, $timer1, $timer2);
+			}
+
+			return $result;
 		}
 
-		public function select($columns, $condition = '', $cached = 0) {
+		public function select($columns, $condition = '', $cached = 1, $time = 30) {
 			$sql = '';
 			if(!$this->is_join) {
 				$sql = 'SELECT ' . $columns . ' FROM ' . $this->name . ' ' . $condition;
@@ -94,8 +115,30 @@
 				$sql = 'SELECT ' . $join_columns . ' FROM ' . $this->join . ' ' . $condition;
 			}
 
-			$cached_output = ($cached != 0) ? $this->cache->get($sql, $count) : false;
-			$output = ($cached_output === false) ? $this->database->query($sql) : $cached_output;
+			if(!$this->cache) {
+				$this->cache = new Cache();
+			}
+
+			$timer1 = microtime(true);
+			$cached_output = ($cached != 0) ? $this->cache->get(md5($sql), $time) : false;
+			$timer2 = microtime(true);
+			if(DEBUG_QUERIES) {
+				timeDiffLog('[CACHE-GET] ' . $sql, $timer1, $timer2);
+			}
+
+			if($cached_output === false) {
+				$output = $this->database->query($sql);
+				$timer3 = microtime(true);
+				$this->cache->set(md5($sql), $output);
+				$timer4 = microtime(true);
+
+				if(DEBUG_QUERIES) {
+					timeDiffLog('[DB-QUERY] ' . $sql, $timer2, $timer3);
+					timeDiffLog('[CACHE-SET] ' . $sql, $timer3, $timer4);
+				}
+			} else {
+				$output = $cached_output;
+			}
 			return $output;
 		}
 

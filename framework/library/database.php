@@ -20,8 +20,6 @@
 		public function __construct() {
 			// If the debugger is one, show the query time on the screen
 			$this->debug = false;
-			if(DEBUG_QUERIES)
-				$this->debug = true;
 			$this->file = new File();
 		}
 
@@ -109,23 +107,8 @@
 			// Get the results in an array
 			$start_time = 0;
 			$end_time = 0;
-			$cached_query = false;
-
-			// If debugger is on, start the clock for the query
-			if($this->debug) {
-				$start_time = microtime(true);
-			}
 
 			$results = $this->createArray($query_type, mysql_query($sql));
-
-			// If debugging is one, display the time required in the query string
-			if($this->debug) {
-				$end_time = microtime(true);
-				if($cached_query)
-					display_system("[" . round(( 1000 * ($end_time - $start_time)), 2) . " ms][cached] $sql");
-				else
-					display_system("[" . round(( 1000 * ($end_time - $start_time)), 2) . " ms] $sql");
-			}
 			return $results;
 		}
 

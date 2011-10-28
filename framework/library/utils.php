@@ -255,4 +255,8 @@
 		return str_replace(array('<br>', '<br />', '<br/>'), PHP_EOL, $string);
 	}
 
+	function timeDiffLog($running, $timer1, $timer2) {
+		display_system('[' . ($timer2 - $timer1) * 1000 . ' s] ' . $running);
+	}
+
 ?>
