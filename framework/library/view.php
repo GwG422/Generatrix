@@ -209,7 +209,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 		private function addGoogleAjaxLibraries() {
 			$content = '';
 			if(JS_JQUERY != '') {
-				$content .=  $this->addJavascript('/public/javascript/jquery-' . JS_JQUERY . '.min.js');	
+				$content .=  $this->addJavascript('/public/javascript/jquery-' . JS_JQUERY . '.min.js');
 			}
 
 			if(JS_COOKIE == '1') {
@@ -329,7 +329,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 			$content .= "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
 
 			if( (APPLICATION_FAVICON != '') && file_exists(path(APPLICATION_FAVICON)) ) {
-				$content .= "<link rel=\"shortcut icon\" href=\"" . APPLICATION_FAVICON . "\">\n";
+				$content .= "<link rel=\"shortcut icon\" href=\"" . href(APPLICATION_FAVICON) . "\">\n";
 			}
 
 			if( (APPLICATION_TOUCH_ICON != '') && file_exists(path(APPLICATION_TOUCH_ICON)) ) {
