@@ -197,6 +197,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 		// Add the generated css
 		private function addGeneratedCss() {
 			if(!$this->added_generated_css) {
+				// TODO : Make webfonts load via config.json
 				$this->getHead()->appendContent(
 					$this->addCss('/public/style/generatrix-reset.css') .
 					$this->addCss('/public/style/generatrix.css')
@@ -329,6 +330,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 			} else {
 				$this->addGeneratedCss();
 				$this->addGoogleAjaxLibraries();
+				$this->addTypeKit();
 			}
 		}
 
