@@ -207,10 +207,8 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 
 		// Add typekit
 		private function addTypeKit() {
-			$content = '';
-
 			if(TYPEKIT != '') {
-				$content .= $this->getHead()->appendContent('
+				$this->getHead()->appendContent('
 					<script type="text/javascript" src="http://use.typekit.com/' . TYPEKIT . '.js"></script>
 					<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 				');
