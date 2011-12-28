@@ -30,6 +30,10 @@
 			return $this;
 		}
 
+		public function set($param, $value) {
+			$this->mailer->set($param, $value);
+		}
+
 		public function getApplicationEmail() {
 			return $this->application_email;
 		}
