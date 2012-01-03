@@ -182,7 +182,6 @@
 								}
 
 								if(!$this->cli->isEnabled()) {
-									echo $final_page;
 
 									try {
 									    $wkhtmltopdf = new Wkhtmltopdf( array( "path" => path("/app/cache/") ) );
