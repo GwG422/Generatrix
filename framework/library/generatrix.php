@@ -44,12 +44,12 @@
 		public function getDatabase() {
 			return $this->database;
 		}
-		
+
 		public function setDatabaseAPI($database_api) {
 			$this->database_api = $database_api;
 			return $this;
 		}
-		
+
 		public function getDatabaseAPI() {
 			return $this->database_api;
 		}
@@ -97,7 +97,7 @@
 			for($i = 0; $i < 10; $i++) {
 				if(!isset($request[$i]))
 					$request[$i] = '';
-			}	
+			}
 			return $request;
 		}
 
@@ -130,7 +130,7 @@
 			$found_cached_page = $this->checkCache();
 			if($found_cached_page == true)
 				return;
-			
+
 			if(class_exists($controller_class)) {
 				if(method_exists($controller_class, $controller_method)) {
 					if(class_exists($view_class)) {
@@ -165,7 +165,35 @@
 								}
 
 								showJSON($view_variables);
-								
+
+							} else if( in_array($this->request_type, array('pdf') ) ) {
+
+								if(version_compare(PHP_VERSION, '5.2.0') >= 0) {
+									$view->$controller_method();
+									if($controller->isControllerHtml()) {
+										$final_page .= $view->endPage();
+									}
+								} else {
+									$view->$controller_method();
+									$html_object = $view->endPage();
+									if ( is_object($html_object) && $controller->isControllerHtml()  ) {
+										$final_page .= $html_object->_toString();
+									}
+								}
+
+								if(!$this->cli->isEnabled()) {
+									echo $final_page;
+
+									try {
+									    $wkhtmltopdf = new Wkhtmltopdf( array( "path" => path("/app/cache/") ) );
+									    $wkhtmltopdf->setHtml( $final_page );
+									    $wkhtmltopdf->output(Wkhtmltopdf::MODE_DOWNLOAD, createHash(time() * rand(), 8) . ".pdf");
+									} catch(Exception $e) {
+									    echo $e->getMessage();
+									}
+
+								}
+
 							} else {
 
 								if(version_compare(PHP_VERSION, '5.2.0') >= 0) {
@@ -202,7 +230,7 @@
 					}
 				} else {
 					if( $this->request_type == 'json' ) {
-						display_404_json('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');	
+						display_404_json('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');
 					} else {
 						display_404('The method <strong>"'. $controller_method . '"</strong> in class <strong>"'. $controller_class .'"</strong> does not exist');
 					}
@@ -234,7 +262,7 @@
 						$last_element = $request[$i];
 					}
 				}
-				
+
 				$dots = explode('.', $last_element);
 
 				$type = '';
