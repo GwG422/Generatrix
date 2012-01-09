@@ -3,4 +3,6 @@ app/cache/*.txt
 app/cache/*.cac
 app/cache/images/*
 *.xcodeproj
+*.sublime-project
+*.sublime-workspace
 build/
