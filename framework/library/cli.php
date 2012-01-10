@@ -29,8 +29,14 @@
 			}
 
 			// if $_SERVER['argc'] is greater than 0, it's CLI
-			if(isset($_SERVER['argc']) && ($_SERVER['argc'] > 1))
+			// !!! BUG !!!
+			// $_SERVER['argc'] is not way definite way of checking CLI mode
+			// This check breaks when USE_CATCH_ALL is turned on and it triggers CLI mode below
+			// A safer option till now is using PHP_SAPI, if php_sapi_name() returns "cli", we know that its cli
+			// and enable the boolean
+			if(php_sapi_name() == 'cli') {
 				$this->addParameter('enabled', true);
+			}
 		}
 	}
 
