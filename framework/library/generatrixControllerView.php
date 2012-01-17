@@ -16,9 +16,9 @@
 			return (isset($cli_array[0])) ? true : false;
 		}
 
-		public function base() { } 
+		public function base() { }
 
-		public function help() { } 
+		public function help() { }
 
 		public function addPage() {
 			if(!$this->isCli())
@@ -55,7 +55,66 @@
 				}
 			} else {
 				display_error('FAILED : Please specify the page name as "php index.php generatrix addPage the-page-name"');
-			}	
+			}
+		}
+
+		public function exportDbStructure() {
+			if (!$this->isCLI())
+				return;
+
+			exec('mysqldump ' . DATABASE_NAME . ' -u' . DATABASE_USER . ' -p' . DATABASE_PASS . ' -d > ' . path('/app/model/structures/' . DATABASE_NAME . '_' . time() . '.sql'), $output);
+			$dump = implode("\n", $output);
+			display($dump);
+		}
+
+		public function importDbStructure() {
+			if (!$this->isCLI())
+				return;
+
+			$cli_array = $this->getGeneratrix()->getCliArray();
+			$cli_2 = isset($cli_array[2]) ? $cli_array[2] : false;
+
+			$structures = array();
+			if ($handle = opendir(path("/app/model/structures/"))) {
+				while(false !== ($entry = readdir($handle))) {
+					if ($entry != "." && $entry != "..") {
+						if (pathinfo(path("/app/model/structures/" . $entry), PATHINFO_EXTENSION) === "sql") {
+							$structures[filemtime(path("/app/model/structures/" . $entry))] = $entry;
+						}
+					}
+				}
+
+				// Sort the structures
+				ksort($structures);
+			} else {
+				display("Error: Couldn't open directory for reading");
+				display("Make sure the app/model/structures directory exists & you have sufficient permissions");
+			}
+
+			if ($cli_2) {
+				switch($cli_2) {
+					case "view":
+						if (count($structures) > 1) {
+							display("Last modified		Filename");
+							foreach($structures as $time => $filename) {
+								display(date("d/m/Y G:i:s", $time) . "	" . $filename);
+							}
+						} else {
+							display("No database structures found!");
+						}
+						break;
+					default:
+						// Import the specified sql file
+						display("Importing the strucutre: " . $cli_2);
+						$this->importDb("/" . $cli_2);
+						break;
+				}
+			} else {
+				// Import the latest structure
+				$latest_structure = array_pop($structures);
+				display("Importing the latest structure: " . $latest_structure);
+				$this->importDb("/app/model/structures/" . $latest_structure);
+			}
 		}
 
 		public function prepareModel() {
@@ -68,7 +127,7 @@
 				display_error('FAILED : The databases file already exists, please delete it by running rm ' . path('/app/model/databases.php') . ' and run this query again to recreate the file');
 				return;
 			}
-			
+
 			$model_class_start = '
   class ___TABLE_CLASS_NAME___ extends Model {
     public function __construct($database) {
@@ -86,7 +145,7 @@
 
 				$class_start = str_replace('___TABLE_NAME___', $table_name, $model_class_start);
 				$class_start = str_replace('___TABLE_CLASS_NAME___', str_replace(DATABASE_PREFIX, '', $table_name), $class_start);
-				
+
 				$file_content .= $class_start;
 
 				$columns = $db->query('DESCRIBE ' . $table_name);
@@ -117,6 +176,9 @@
 				'/app/model/databases.php',
 				$file_content
 			);
+
+			// Automatically create & save the structure
+			$this->exportDbStructure();
 		}
 
 		public function exportDb() {
@@ -128,11 +190,15 @@
 			display($dump);
 		}
 
-		public function importDb() {
+		public function importDb($file = "") {
 			if(!$this->isCli())
 				return;
 
-			exec('mysql -u' . DATABASE_USER . ' -p' . DATABASE_PASS . ' ' . DATABASE_NAME . ' < ' . path('/app/model/' . DATABASE_NAME . '.sql'), $output);
+			if (!$file) {
+				$file = '/app/model/' . DATABASE_NAME . '.sql';
+			}
+
+			exec('mysql -u' . DATABASE_USER . ' -p' . DATABASE_PASS . ' ' . DATABASE_NAME . ' < ' . path($file), $output);
 			$dump = implode("\n", $output);
 			display($dump);
 		}
@@ -156,7 +222,7 @@
 							$user = $package['user'];
 							$repo = $package['repo'];
 							$desc = $package['description'];
-	
+
 							$packages_data = file_get_contents(path('/app/cache/packages.list'));
 							$packages_list = unserialize($packages_data);
 
@@ -323,7 +389,7 @@
 			$return = true;
 			foreach($list as $item => $size) {
 				if(file_exists(path('/app/packages/' . $item)) && (filesize(path('/app/packages/' . $item)) == $size)) {
-					
+
 				} else {
 					if(($size == 0) && is_dir(path('/app/packages/' . $item))) {
 
@@ -396,6 +462,10 @@ The most commonly used functions are:
   prepareModel                  - creates the model file based on your database structure
   exportDb                      - exports the complete database
   importDb                      - imports the exported database
+  exportDbStructure             - export the database structure
+  importDbStructure             - import the latest available structure
+  importDbStructure view        - gets a list of all available structures
+  importDbStructure [path]      - import the specified structure file
   packages view                 - gets a list of all available packages on github.com
   packages details user:repo    - gets a list of all available packages on github.com
   packages search test          - searches for a particular package on github.com
@@ -403,9 +473,11 @@ The most commonly used functions are:
   remove user:repo              - removes the latest version of the repo from your machine
 			");
 		}
-		public function help() { $this->base(); } 
+		public function help() { $this->base(); }
 		public function addPage() { }
 		public function prepareModel() { }
+		public function exportDbStructure() { }
+		public function importDbStructure() { }
 		public function exportDb() { }
 		public function importDb() { }
 		public function packages() { }
