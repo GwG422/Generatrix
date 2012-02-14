@@ -149,7 +149,7 @@
 				return $this->getGeneratrix()->getDatabase();
 			}
 		}
-		
+
 		public function db() {
 			$default_class = $this->getGeneratrix()->getDatabaseApi();
 			if(isset($default_class)) {
@@ -170,20 +170,20 @@
 		}
 
 		public function getPostValue($tag_name) {
-			return checkArray($_POST, $tag_name) ? mysql_real_escape_string($_POST[$tag_name], $this->getDb()->getConnection()) : false;
+			return checkArray($_POST, $tag_name) ? $_POST[$tag_name] : false;
 		}
 
 		public function getCookieValue($tag_name) {
-			return checkArray($_COOKIE, $tag_name) ? mysql_real_escape_string($_COOKIE[$tag_name], $this->getDb()->getConnection()) : false;
+			return checkArray($_COOKIE, $tag_name) ? $_COOKIE[$tag_name] : false;
 		}
 
 		public function getSessionValue($tag_name) {
-			return checkArray($_SESSION, $tag_name) ? mysql_real_escape_string($_SESSION[$tag_name], $this->getDb()->getConnection()) : false;
+			return checkArray($_SESSION, $tag_name) ? $_SESSION[$tag_name] : false;
 		}
 
-	    public function getGetValue($tag_name) {
-				return checkArray($_GET, $tag_name) ? mysql_real_escape_string($_GET[$tag_name], $this->getDb()->getConnection()) : false;
-	    }
+		public function getGetValue($tag_name) {
+			return checkArray($_GET, $tag_name) ? $_GET[$tag_name] : false;
+		}
 
 		public function getURL() {
 			return $this->getGeneratrix()->getRequestArray();
