@@ -30,12 +30,16 @@
 			return $this;
 		}
 
+		public function getApplicationEmail() {
+			return $this->application_email;
+		}
+
 		public function set($param, $value) {
 			$this->mailer->set($param, $value);
 		}
 
-		public function getApplicationEmail() {
-			return $this->application_email;
+		public function addAttachment($path, $name = "") {
+			$this->mailer->AddAttachment($path, $name);
 		}
 
 		// Sendmail function, use this to send outgoing emails
