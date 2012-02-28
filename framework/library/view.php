@@ -348,7 +348,7 @@ g.async=1;g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s
 				$content .= "<link rel=\"apple-touch-icon\" href=\"" . APPLICATION_TOUCH_ICON . "\">\n";
 			}
 
-			$content .= "<script src=\"" . href("/public/javascript/modernizr-1.6.min.js") . "\"></script>\n";
+			$content .= "<script src=\"" . href("/public/javascript/modernizr-2.5.3.min.js") . "\"></script>\n";
 
 			$this->getHead()->appendContent($content);
 		}
