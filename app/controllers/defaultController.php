@@ -36,10 +36,15 @@
 	class defaultController extends Controller {
 
 		public function base() {
-			$json = file_get_contents('http://github.com/api/v2/json/commits/list/vercingetorix/Generatrix/master');
+			$json = file_get_contents('https://github.com/api/v2/json/commits/list/vxtindia/Generatrix/master');
 			$commits = json_decode($json, true);
 			$commits = isset($commits['commits']) ? $commits['commits'] : array();
-			
+
+			$variable = array(
+				"foo" => "bar"
+			);
+
+			// Set makes the $variable available in the views
 			$this->set('name_of_the_variable', $variable);
 
 			$data = array();
