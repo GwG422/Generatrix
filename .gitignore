@@ -6,3 +6,4 @@ app/cache/images/*
 *.sublime-project
 *.sublime-workspace
 build/
+app/model/vxtindia.sql
